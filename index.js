@@ -1,5 +1,9 @@
-var app = require('http').createServer(handler)
+var app = require('http').createServer(handler);
 var io = require('socket.io')(app);
+
+var redis = require('socket.io-redis');
+io.adapter(redis({ host: "127.0.0.1", port: "6379" }));
+
 var fs = require('fs');
 var i = 0;
 var user_socket_map = {};
@@ -42,12 +46,15 @@ io.set('authorization', function(handshakeData, accept) {
     }
 });
 
-io.on('connection', function(socket) {
+var Notice = io.on('connection', function(socket) {
     //页面刷新会重连，id将会改变
     console.log("socket.id:",socket);
     var user = socket.handshake.headers.sessions.user;
     var id = user && user._id;
     user_socket_map[id] = socket;
+    //伪代码
+    //将socket.id存到redis
+    redis.saveSocketID(id,socket.id);
 
     socket.on('my other event', function(data) {
         //console.log(data);
@@ -78,4 +85,9 @@ setInterval(function() {
 	}
 }, 1000);
 
-
+//伪代码
+redis.getSocketID(userID,function(err,socketIds){
+    for(var i = 0; i < socketIds.length;i ++){
+        Notice.to(socketIds[i]).emit('notice', data);
+    }
+});
