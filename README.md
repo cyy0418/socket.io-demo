@@ -18,3 +18,5 @@
 建立连接时将socket.id存到redis;
 发送消息时，从redis获取socke.id;
 然后调用 `Notice.to(socketId).emit('notice', data);`
+
+[查看详细](http://cyy0418.github.io/2016/01/10/socket-nodejs/)
